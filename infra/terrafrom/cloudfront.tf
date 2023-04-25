@@ -15,6 +15,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
+  comment             = "React Application S3 Hosting Example"
+
+  logging_config {
+    bucket = module.logging_bucket.s3_bucket_bucket_domain_name
+  }
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -28,7 +33,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
         forward = "none"
       }
     }
-
 
     default_ttl            = 86400    // 24h if no Cache-Control max-age or Expires
     min_ttl                = 3600     // 1h

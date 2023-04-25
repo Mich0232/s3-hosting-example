@@ -1,13 +1,6 @@
-resource "random_pet" "this" {}
-
-locals {
-  prefix       = "hosting-test-${random_pet.this.id}"
-  s3_origin_id = "s3-bucket-with-react-app"
-  tags = {
-    ProjectName = "ReactAppS3HostingTest"
-  }
-}
-
+#################
+# Origin Bucket #
+#################
 resource "aws_s3_bucket" "this" {
   bucket = "${local.prefix}-bucket"
 
@@ -48,4 +41,25 @@ data "aws_iam_policy_document" "s3_bucket_public_access" {
 resource "aws_s3_bucket_policy" "this" {
   bucket = aws_s3_bucket.this.bucket
   policy = data.aws_iam_policy_document.s3_bucket_public_access.json
+}
+
+##################
+# Logging Bucket #
+##################
+module "logging_bucket" {
+  source = "terraform-aws-modules/s3-bucket/aws"
+
+  bucket = "${local.prefix}-logging"
+  acl    = "private"
+
+  versioning = {
+    enabled = true
+  }
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+
+  tags = local.tags
 }
