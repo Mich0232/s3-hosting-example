@@ -1,18 +1,7 @@
 name: Deploy
 
 on:
-  workflow_dispatch:
-    inputs:
-      bucket:
-        type: string
-        required: true
-        default: "hosting-test-rare-seagull-bucket"
-        description: S3 bucket to upload the build files
-      distribution:
-        type: string
-        required: true
-        default: "E1SQTFAD89UJVV"
-        description: "ID of Cloudfront distribution"
+  workflow_dispatch
 
 jobs:
   deploy:
@@ -32,6 +21,6 @@ jobs:
       - name: "Build"
         run: yarn build
       - name: "Upload files to S3"
-        run: aws s3 sync build/* s3://${{ inputs.bucket }}/ --recursive
+        run: aws s3 sync build/* s3://${{ vars.bucket }}/ --recursive
       - name: "Invalidate Cloudfront cache"
-        run: aws cloudfront create-invalidation --distribution-id ${{ inputs.distribution }} --paths "/*" >/dev/null 2>&1
+        run: aws cloudfront create-invalidation --distribution-id ${{ vars.distribution }} --paths "/*" >/dev/null 2>&1
