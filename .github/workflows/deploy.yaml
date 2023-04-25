@@ -25,7 +25,7 @@ jobs:
         working-directory: ./frontend
         run: yarn build
       - name: "Upload files to S3"
-        working-directory: ./frontend
-        run: aws s3 sync build/* s3://${{ vars.bucket }}/ --recursive
+        working-directory: ./frontend/build
+        run: aws s3 sync . s3://${{ vars.bucket }}/ --recursive
       - name: "Invalidate Cloudfront cache"
         run: aws cloudfront create-invalidation --distribution-id ${{ vars.distribution }} --paths "/*" >/dev/null 2>&1
