@@ -1,0 +1,37 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      bucket:
+        type: string
+        required: true
+        default: "hosting-test-rare-seagull-bucket"
+        description: S3 bucket to upload the build files
+      distribution:
+        type: string
+        required: true
+        default: "E1SQTFAD89UJVV"
+        description: "ID of Cloudfront distribution"
+
+jobs:
+  deploy:
+    name: 'Deploy frontend'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: "Build"
+        run: yarn build
+      - name: "Upload files to S3"
+        run: aws s3 sync build/* s3://${{ inputs.bucket }}/ --recursive
+      - name: "Invalidate Cloudfront cache"
+        run: aws cloudfront create-invalidation --distribution-id ${{ inputs.distribution }} --paths "/*" >/dev/null 2>&1
